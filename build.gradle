@@ -5,13 +5,13 @@ plugins {
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
-
+//C:\Program Files\Java\jre1.8.0_333\bin
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
 loom {
-	accessWidenerPath = file("src/main/resources/bleachhack.accesswidener")
+	accessWidenerPath = file("src/main/resources/hydrogenhack.accesswidener")
 }
 
 repositories {
@@ -22,7 +22,29 @@ repositories {
 	// for more information about repositories.
 	maven {
 		url "https://jitpack.io"
+		//url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
+		}
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	maven {
+		name = "modrinth"
+		url = "https://api.modrinth.com/maven"
+
+		content {
+			includeGroup "maven.modrinth"
+		}
 	}
+	flatDir {
+		dirs 'libs'
+	}
+	mavenCentral()
+}
+project.ext.jomlVersion = "1.10.5"
+configurations {
+	// include mods
+	modImplementation.extendsFrom(modInclude)
+	include.extendsFrom(modInclude)
+
+	// include libraries
 }
 
 dependencies {
@@ -30,8 +52,13 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
+	modImplementation "baritone-api-fabric:baritone-fabric-api:1.5.3-613"
+	//baritone-fabric-api-1.5.3-613.jar
+	//modInclude "baritone:fabric:${project.minecraft_version}-SNAPSHOT"
+	//include(modImplementation("baritone:fabric:${project.minecraft_version}-SNAPSHOT"))
+	//modRuntimeOnly("me.djtheredstoner:DevAuth-${moduleName}:${version}")
 	include(modImplementation("com.github.fzakaria:ascii85:1.2"))
+	implementation "org.joml:joml:${jomlVersion}"
 
 	// include(modImplementation("com.github.BleachDrinker420:DiscordIPC:9957fc8114")) {
     //    exclude group: 'com.google.code.gson', module: 'gson'
@@ -82,3 +109,4 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+

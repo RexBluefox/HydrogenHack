@@ -1,0 +1,33 @@
+{
+  "package": "org.hydrogenhack.command.commands",
+  "commands": [
+	"CmdBind",
+	"CmdCI",
+	"CmdClickGui",
+	"CmdClip",
+	"CmdCustomSign",
+	"CmdEnchant",
+	"CmdEntityMenu",
+	"CmdEntityStats",
+	"CmdFriends",
+	"CmdGamemode",
+	"CmdGive",
+	"CmdHelp",
+	"CmdInvPeek",
+	"CmdNBT",
+	"CmdNotebot",
+	"CmdPeek",
+	"CmdPrefix",
+	"CmdRbook",
+	"CmdRename",
+	"CmdSay",
+	"CmdServer",
+	"CmdSetting",
+	"CmdSkull",
+	"CmdSpammer",
+	"CmdTerrain",
+	"CmdToggle",
+	"CmdWatermark",
+	  "CmdTP"
+  ]
+}
