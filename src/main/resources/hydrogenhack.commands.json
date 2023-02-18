@@ -30,6 +30,7 @@
 	"CmdWatermark",
     "CmdTP",
     "CmdView",
-    "CmdHclip"
+    "CmdHclip",
+    "CmdAlign"
   ]
 }
