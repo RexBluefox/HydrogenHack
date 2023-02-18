@@ -8,6 +8,10 @@
  */
 package org.hydrogenhack.module.mods;
 
+import net.minecraft.client.particle.*;
+import net.minecraft.entity.*;
+import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.vehicle.BoatEntity;
 import org.hydrogenhack.command.Command;
 import org.hydrogenhack.event.events.EventBlockEntityRender;
 import org.hydrogenhack.event.events.EventEntityRender;
@@ -19,21 +23,14 @@ import org.hydrogenhack.eventbus.BleachSubscribe;
 import org.hydrogenhack.gui.window.Window;
 import org.hydrogenhack.module.Module;
 import org.hydrogenhack.module.ModuleCategory;
-import org.hydrogenhack.setting.module.SettingMode;
-import org.hydrogenhack.setting.module.SettingSlider;
-import org.hydrogenhack.setting.module.SettingToggle;
+import org.hydrogenhack.setting.module.*;
+import org.hydrogenhack.util.BleachLogger;
 import org.hydrogenhack.util.io.BleachFileHelper;
 
 import com.google.gson.JsonElement;
 
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.particle.CampfireSmokeParticle;
-import net.minecraft.client.particle.ElderGuardianAppearanceParticle;
-import net.minecraft.client.particle.ExplosionLargeParticle;
 import net.minecraft.client.particle.FireworksSparkParticle.FireworkParticle;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -73,15 +70,12 @@ public class NoRender extends Module {
 						new SettingToggle("Campfires", true).withDesc("Removes campfire smoke particles."),                        // 2-0
 						new SettingToggle("Explosions", false).withDesc("Removes explosion particles.").withChildren(              // 2-1
 								new SettingSlider("Keep", 0, 100, 0, 0).withDesc("How much of the explosion particles to keep.")), // 2-2
-						new SettingToggle("Fireworks", false).withDesc("Removes firework explosion particles.")),                  // 2-3
+						new SettingToggle("Fireworks", false).withDesc("Removes firework explosion particles."),
+						new SettingToggle("Weather",false).withDesc("Removes all Rain"),
+						new SettingToggle("Bubbles",false).withDesc("Removes all bubbles")),                  // 2-4
 				
 				new SettingToggle("Entities", true).withDesc("Removes certain entities from the world.").withChildren(             // 3
-						new SettingToggle("Armor Stands", false).withDesc("Removes armor stands."),                                // 3-0
-						new SettingToggle("Falling Blocks", false).withDesc("Removes falling blocks."),                            // 3-1
-						new SettingToggle("Minecarts", false).withDesc("Removes minecarts."),                                      // 3-2
-						new SettingToggle("Snowballs", false).withDesc("Removes snowballs."),                                      // 3-3
-						new SettingToggle("Xp Orbs", false).withDesc("Removes experience orbs."),
-						new SettingToggle("Items", false).withDesc("Removes items.")));
+						new SettingEntityTypeList("Entities","Entity Types"))); // 3-0
 
 		JsonElement signText = BleachFileHelper.readMiscSetting("customSignText");
 
@@ -135,14 +129,23 @@ public class NoRender extends Module {
 
 	@BleachSubscribe
 	public void onEntityRender(EventEntityRender.Single.Pre event) {
-		if ((isEntityToggled(0) && event.getEntity() instanceof ArmorStandEntity)
-				|| (isEntityToggled(1) && event.getEntity() instanceof FallingBlockEntity)
-				|| (isEntityToggled(2) && event.getEntity() instanceof AbstractMinecartEntity)
-				|| (isEntityToggled(3) && event.getEntity() instanceof SnowballEntity)
-				|| (isEntityToggled(4) && event.getEntity() instanceof ExperienceOrbEntity)
-				|| (isEntityToggled(5) && event.getEntity() instanceof ItemEntity)) {
+		SettingList<EntityType> setting = getSetting(3).asToggle().getChild(0).asList(EntityType.class);
+		if (isEnabled() && setting.contains(event.getEntity().getType())){
+			//BleachLogger.info("Found " + event.getEntity().getType().getName());
 			event.setCancelled(true);
 		}
+
+
+//		if ((isEntityToggled(0) && event.getEntity() instanceof ArmorStandEntity)
+//				|| (isEntityToggled(1) && event.getEntity() instanceof FallingBlockEntity)
+//				|| (isEntityToggled(2) && event.getEntity() instanceof AbstractMinecartEntity)
+//				|| (isEntityToggled(3) && event.getEntity() instanceof SnowballEntity)
+//				|| (isEntityToggled(4) && event.getEntity() instanceof ExperienceOrbEntity)
+//				|| (isEntityToggled(5) && event.getEntity() instanceof ItemEntity)
+//				|| (isEntityToggled(6) && event.getEntity() instanceof BoatEntity)
+//				|| (isEntityToggled(7) && event.getEntity() instanceof SheepEntity)) {
+//			event.setCancelled(true);
+//		}
 	}
 
 	@BleachSubscribe
@@ -172,9 +175,11 @@ public class NoRender extends Module {
 		if ((isWorldToggled(2) && event.getParticle() instanceof ElderGuardianAppearanceParticle)
 				|| (isParticleToggled(0) && event.getParticle() instanceof CampfireSmokeParticle)
 				|| (isParticleToggled(1) && event.getParticle() instanceof ExplosionLargeParticle && Math.abs(event.getParticle().getBoundingBox().hashCode()) % 101 >= getParticleChild(1).getChild(0).asSlider().getValueInt())
-				|| (isParticleToggled(2) && event.getParticle() instanceof FireworkParticle)) {
+				|| (isParticleToggled(2) && event.getParticle() instanceof FireworkParticle)
+				|| (isParticleToggled(4) && event.getParticle() instanceof BubbleColumnUpParticle || event.getParticle() instanceof BubblePopParticle)) {
 			event.setCancelled(true);
 		}
+		//BubbleColumnUpParticle
 	}
 
 	@BleachSubscribe
@@ -182,6 +187,9 @@ public class NoRender extends Module {
 		if (isWorldToggled(1) && getWorldChild(1).getChild(0).asToggle().getState() && event.getEffect().getType() == ParticleTypes.TOTEM_OF_UNDYING) {
 			event.setCancelled(true);
 		}
+//		if ((isParticleToggled(3) && event.getEffect().getType() == ParticleTypes.RAIN)){
+//			event.setCancelled(true);
+//		}
 	}
 
 	@BleachSubscribe
@@ -192,6 +200,10 @@ public class NoRender extends Module {
 		} else if (isWorldToggled(2) && path.equals("entity.elder_guardian.curse")) {
 			event.setCancelled(true);
 		}
+		if (isParticleToggled(4) && (path.equals("block.bubble_column.bubble_pop") || path.equals("block.bubble_column.upwards_ambient"))){
+			event.setCancelled(true);
+		}
+		//mc.getSoundManager().soundSystem.sounds.
 	}
 
 	@BleachSubscribe

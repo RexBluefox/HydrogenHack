@@ -32,6 +32,7 @@ import net.minecraft.util.math.Vec3f;
 
 public class Renderer {
 
+
 	// -------------------- Fill + Outline Boxes --------------------
 
 	public static void drawBoxBoth(BlockPos blockPos, QuadColor color, float lineWidth, Direction... excludeDirs) {

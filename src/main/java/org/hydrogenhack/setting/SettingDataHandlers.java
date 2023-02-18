@@ -10,6 +10,8 @@ import com.google.gson.JsonPrimitive;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
@@ -105,6 +107,17 @@ public class SettingDataHandlers {
 		public Item read(JsonElement json) {
 			Item item = Registry.ITEM.get(new Identifier(json.getAsString()));
 			return item != Items.AIR ? item : null;
+		}
+	};
+	public static final SettingDataHandler<EntityType> ENTITY_TYPE = new SettingDataHandler<>() {
+		public JsonElement write(EntityType value) {
+			return new JsonPrimitive(Registry.ENTITY_TYPE.getId(value).toString());
+		}
+
+		public EntityType read(JsonElement json) {
+			EntityType type = Registry.ENTITY_TYPE.get(new Identifier(json.getAsString()));
+//			return type != EntityType. ? type : null;
+			return type;
 		}
 	};
 	

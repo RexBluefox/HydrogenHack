@@ -8,10 +8,14 @@
  */
 package org.hydrogenhack.module.mods;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -20,6 +24,7 @@ import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -38,7 +43,14 @@ import org.hydrogenhack.module.ModuleManager;
 import org.hydrogenhack.setting.module.SettingMode;
 import org.hydrogenhack.setting.module.SettingSlider;
 import org.hydrogenhack.setting.module.SettingToggle;
+import org.hydrogenhack.util.render.Renderer2D;
+import org.hydrogenhack.util.render.color.QuadColor;
+import org.lwjgl.opengl.GL;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -46,6 +58,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static java.awt.Color.WHITE;
+import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 
 public class UI extends Module {
 
@@ -65,7 +80,13 @@ public class UI extends Module {
 	private double tps = 20;
 	private long lastPacket = 0;
 
-	public UI() {
+	//private ResourceLocation spectatingImage = mc.getTextureManager().registerDynamicTexture("bluefox", net.minecraft.client.render.)
+	private boolean locked = false;
+	private boolean empty = true;
+
+	private String ImageUrl = "https://cdn.rexbluefox.dev/spectating.png/direct";
+
+	public UI() throws IOException {
 		super("UI", KEY_UNBOUND, ModuleCategory.RENDER, true, "Shows stuff onscreen.",
 				new SettingToggle("Modulelist", true).withDesc("Shows the module list.").withChildren(                                 // 0
 						new SettingToggle("InnerLine", true).withDesc("Adds an extra line to the front of the module list."),
@@ -94,7 +115,13 @@ public class UI extends Module {
 				new SettingToggle("Inventory", false).withDesc("Renders your inventory on screen.").withChildren(                      // 11
 						new SettingSlider("Background", 0, 255, 140, 0).withDesc("How opaque the background should be.")),
 				new SettingToggle("Testing", false).withDesc("Just for testing purposes"),
-				new SettingToggle("InfAura Info",false).withDesc("Info for the InfAura Module"));
+				new SettingToggle("InfAura Info",false).withDesc("Info for the InfAura Module"),
+				new SettingToggle("Player Viewer Info",true).withDesc("Info for the Player Viewer").withChildren(
+						new SettingToggle("On Inventory",false),
+						new SettingToggle("No Chat",false),
+						new SettingToggle("Invert",false),
+						new SettingSlider("Image Height",1,1000,10,0)
+				));
 
 		UIContainer container = UIClickGuiScreen.INSTANCE.getUIContainer();
 
@@ -197,6 +224,12 @@ public class UI extends Module {
 		container.windows.put("infAuraInfo",
 				new UIWindow(new Position(0.2, 0.8, "server", 0), container,
 						() -> getSetting(13).asToggle().getState(),
+						() -> new int[] { mc.textRenderer.getWidth(infAuraText) + 2, 10 },
+						(ms, x, y) -> mc.textRenderer.drawWithShadow(ms, infAuraText, x + 1, y + 1, 0xa0a0a0))
+		);
+		container.windows.put("playerViewerInfo",
+				new UIWindow(new Position(0.2, 0.8, "playerViewerInfo", 0), container,
+						() -> getSetting(14).asToggle().getState(),
 						() -> new int[] { mc.textRenderer.getWidth(infAuraText) + 2, 10 },
 						(ms, x, y) -> mc.textRenderer.drawWithShadow(ms, infAuraText, x + 1, y + 1, 0xa0a0a0))
 		);
@@ -528,5 +561,66 @@ public class UI extends Module {
 
 	public void setInfAuraText(String text){
 		infAuraText = Text.literal(text);
+	}
+
+	private static final Identifier TEXID = new Identifier("plus", "logo2");
+	private void loadImage(String url) {
+		if (locked) {
+			return;
+		}
+		new Thread(() -> {
+			try {
+				locked = true;
+				var img = NativeImage.read(String.valueOf(ImageIO.read(new URL(url))));
+				mc.getTextureManager().registerTexture(TEXID, new NativeImageBackedTexture(img));
+				empty = false;
+			} catch (Exception ignored) {
+				empty = true;
+			} finally {
+				locked = false;
+			}
+		}).start();
+	}
+	public static void bindTexture(Identifier id) {
+		GlStateManager._activeTexture(GL_TEXTURE0);
+		mc.getTextureManager().bindTexture(id);
+	}
+	public void texture(Identifier id, double x, double y, double width, double height, QuadColor color) {
+		bindTexture(id);
+
+		Renderer2D.TEXTURE.begin();
+		Renderer2D.TEXTURE.texQuad(x, y, width, height, color);
+		Renderer2D.TEXTURE.render(null);
+	}
+	public void renderImage(){
+		SettingToggle playerViewerInfo = getSetting(14).asToggle();
+		Boolean onInventory = playerViewerInfo.getChild(0).asToggle().getState();
+		Boolean noChat = playerViewerInfo.getChild(1).asToggle().getState();
+		Boolean invert = playerViewerInfo.getChild(2).asToggle().getState();
+		int imgHeight = playerViewerInfo.getChild(3).asSlider().getValueInt();
+		int imgWidth = imgHeight * 3;
+		if (empty) {
+			loadImage(ImageUrl);
+			return;
+		}
+
+		if ((onInventory && mc != null && mc.currentScreen != null)) {
+			if (noChat  && mc.currentScreen instanceof ChatScreen) return;
+			if (!invert){
+				//renderer.text("Scrr", imgWidth.get() + x, imgHeight.get()/2 - y, Color.RED, true);
+
+				//texture(TEXID, box.getRenderX(), box.getRenderY(), imgWidth, imgHeight, WHITE);
+			} else {
+				//texture(TEXID, box.getRenderX()+ imgHeight, box.getRenderY(), -(imgWidth), imgHeight, WHITE);
+			}
+		}
+		else if (!onInventory) {
+			if (!invert){
+				//texture(TEXID, box.getRenderX(), box.getRenderY(), imgWidth, imgHeight, WHITE);
+			} else {
+				//texture(TEXID, box.getRenderX()+imgWidth, box.getRenderY(), -(imgWidth), imgHeight, WHITE);
+			}
+		}
+
 	}
 }

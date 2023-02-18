@@ -9,7 +9,7 @@ import org.hydrogenhack.util.PacketHelper;
 
 public class CmdTP extends Command {
     public CmdTP() {
-        super("tp", "Teleport", "tp <packets> <blocks>", CommandCategory.MISC, "hhclip","teleport");
+        super("hhclip", "Teleport", "tp <packets> <blocks>", CommandCategory.MISC, "teleport");
     }
 
     @Override

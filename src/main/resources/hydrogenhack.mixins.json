@@ -3,12 +3,15 @@
   "package": "org.hydrogenhack.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
+    "AccessorCamera",
     "AccessorChatScreen",
     "AccessorFrustum",
     "AccessorHeldItemRenderer",
     "AccessorMinecraftClient",
     "AccessorScreen",
+    "AccessorVehicleMove",
     "AccessorWorldRenderer",
+    "InvokerClientConnection",
     "MixinAbstractBlock",
     "MixinAbstractBlockState",
     "MixinBackgroundRenderer",
@@ -17,6 +20,7 @@
     "MixinBlock",
     "MixinBlockCollisionSpliterator",
     "MixinBlockEntityRenderDispatcher",
+    "MixinBoatEntity",
     "MixinBossBarHud",
     "MixinBufferBuilder",
     "MixinCamera",
@@ -58,11 +62,8 @@
     "MixinSoundSystem",
     "MixinTextureRotation",
     "MixinTitleScreen",
-    "MixinWorldRenderer",
-    "AccessorVehicleMove",
-    "MixinBoatEntity",
     "MixinVec3d",
-    "InvokerClientConnection"
+    "MixinWorldRenderer"
   ],
   "mixinPriority": 899,
   "injectors": {

@@ -108,6 +108,9 @@
     "CoatFly",
     "CoffeeFly",
     "WorldGuardBypass",
-    "RocketFly"
+    "RocketFly",
+    "PlayerViewer",
+    "ChatFilter",
+    "AutoMATE"
   ]
 }

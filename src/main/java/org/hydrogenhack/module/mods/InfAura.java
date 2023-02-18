@@ -125,8 +125,10 @@ public class InfAura extends Module {
     private void teleportFromTo(MinecraftClient client,Vec3d fromPos,Vec3d toPos){
         double distancePerBlink = 8.5;
         double targetDistance = Math.ceil(fromPos.distanceTo(toPos)/distancePerBlink);
+        BleachLogger.logger.info("Target Distance " + targetDistance);
         for (int i = 1; i<=targetDistance;i++){
             Vec3d tempPos = fromPos.lerp(toPos,i/targetDistance);
+            BleachLogger.logger.info("Temp Pos " + tempPos.x + " " + tempPos.y+ " " + tempPos.z);
             PacketHelper.sendPosition(tempPos);
             if (i%4 == 0){
                 try{

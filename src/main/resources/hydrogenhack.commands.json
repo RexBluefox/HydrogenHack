@@ -28,6 +28,8 @@
 	"CmdTerrain",
 	"CmdToggle",
 	"CmdWatermark",
-	  "CmdTP"
+    "CmdTP",
+    "CmdView",
+    "CmdHclip"
   ]
 }

@@ -17,6 +17,7 @@ public class Zoom extends Module {
 
 	public int prevFov;
 	public double prevSens;
+	public double prevScale;
 
 	public Zoom() {
 		super("Zoom", KEY_UNBOUND, ModuleCategory.RENDER, "ok zoomer.",
@@ -27,16 +28,19 @@ public class Zoom extends Module {
 	public void onEnable(boolean inWorld) {
 		super.onEnable(inWorld);
 
-		prevFov = mc.options.getFov().getValue();
+		//prevFov = mc.options.getFov().getValue();
+		prevScale = mc.options.getFovEffectScale().getValue();
 		prevSens = mc.options.getMouseSensitivity().getValue();
 		//mc.options.getFov().setValue();
-		mc.options.getFov().setValue((int) (prevFov / getSetting(0).asSlider().getValue()));
+		//mc.options.getFov().setValue((int) (prevFov / getSetting(0).asSlider().getValue()));
+		mc.options.getFovEffectScale().setValue(prevScale / getSetting(0).asSlider().getValue());
 		mc.options.getMouseSensitivity().setValue(prevSens / getSetting(0).asSlider().getValue());
 	}
 
 	@Override
 	public void onDisable(boolean inWorld) {
-		mc.options.getFov().setValue(prevFov);
+		mc.options.getFovEffectScale().setValue(10.0);
+		//mc.options.getFov().setValue(prevFov);
 		mc.options.getMouseSensitivity().setValue(prevSens);
 
 		super.onDisable(inWorld);
